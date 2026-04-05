@@ -1,5 +1,5 @@
-import { exec as execCallback } from 'child_process';
-import { promisify } from 'util';
+import { exec as execCallback } from "child_process";
+import { promisify } from "util";
 
 const execAsync = promisify(execCallback);
 
@@ -7,10 +7,10 @@ export class BrowserError extends Error {
   constructor(
     message: string,
     public command: string,
-    public stderr: string
+    public stderr: string,
   ) {
     super(message);
-    this.name = 'BrowserError';
+    this.name = "BrowserError";
   }
 }
 
@@ -35,7 +35,7 @@ export class Browser {
       return stdout.trim();
     } catch (error) {
       const err = error as { stderr?: string; message?: string };
-      const stderr = err.stderr?.trim() || err.message || 'Unknown error';
+      const stderr = err.stderr?.trim() || err.message || "Unknown error";
       throw new BrowserError(`agent-browser command failed: ${stderr}`, fullCommand, stderr);
     }
   }
@@ -47,11 +47,11 @@ export class Browser {
 
   async snapshot(options?: SnapshotOptions): Promise<string> {
     const flags: string[] = [];
-    if (options?.interactive) flags.push('-i');
-    if (options?.compact) flags.push('-c');
+    if (options?.interactive) flags.push("-i");
+    if (options?.compact) flags.push("-c");
     if (options?.depth !== undefined) flags.push(`-d ${options.depth}`);
     if (options?.selector) flags.push(`-s '${options.selector}'`);
-    return this.exec(`snapshot ${flags.join(' ')}`);
+    return this.exec(`snapshot ${flags.join(" ")}`);
   }
 
   async click(ref: string): Promise<void> {
@@ -64,23 +64,23 @@ export class Browser {
   }
 
   async close(): Promise<void> {
-    await this.exec('close');
+    await this.exec("close");
   }
 
   // Navigation
   async back(): Promise<void> {
-    await this.exec('back');
+    await this.exec("back");
   }
 
   async forward(): Promise<void> {
-    await this.exec('forward');
+    await this.exec("forward");
   }
 
   async reload(): Promise<void> {
-    await this.exec('reload');
+    await this.exec("reload");
   }
 
-  async scroll(direction: 'up' | 'down' | 'left' | 'right', pixels?: number): Promise<void> {
+  async scroll(direction: "up" | "down" | "left" | "right", pixels?: number): Promise<void> {
     const args = pixels !== undefined ? `${direction} ${pixels}` : direction;
     await this.exec(`scroll ${args}`);
   }
@@ -105,15 +105,15 @@ export class Browser {
 
   // Info
   async screenshot(path?: string): Promise<string> {
-    return this.exec(path ? `screenshot '${path}'` : 'screenshot');
+    return this.exec(path ? `screenshot '${path}'` : "screenshot");
   }
 
   async getTitle(): Promise<string> {
-    return this.exec('get title');
+    return this.exec("get title");
   }
 
   async getUrl(): Promise<string> {
-    return this.exec('get url');
+    return this.exec("get url");
   }
 
   async getText(ref: string): Promise<string> {
