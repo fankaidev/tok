@@ -1,7 +1,18 @@
 #!/usr/bin/env node
 import React from "react";
 import { render } from "ink";
+import { homedir } from "os";
 import { App } from "./components/App.js";
+
+function expandTilde(path: string): string {
+  if (path.startsWith("~/")) {
+    return homedir() + path.slice(1);
+  }
+  if (path === "~") {
+    return homedir();
+  }
+  return path;
+}
 
 interface ParsedArgs {
   url: string;
@@ -69,7 +80,7 @@ function parseArgs(args: string[]): ParsedArgs | null {
   }
 
   const result: ParsedArgs = { url };
-  if (profile) result.profile = profile;
+  if (profile) result.profile = expandTilde(profile);
   if (port) result.port = port;
   return result;
 }
