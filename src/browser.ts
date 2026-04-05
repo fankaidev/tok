@@ -21,28 +21,15 @@ export interface SnapshotOptions {
   selector?: string;
 }
 
-export interface BrowserOptions {
-  sessionName?: string;
-  profile?: string;
-  port?: number;
-}
-
 export class Browser {
   private session: string;
-  private profile: string | undefined;
-  private port: number | undefined;
 
-  constructor(options?: BrowserOptions) {
-    this.session = options?.sessionName ?? `tok-${Date.now()}`;
-    this.profile = options?.profile;
-    this.port = options?.port;
+  constructor(sessionName?: string) {
+    this.session = sessionName ?? `tok-${Date.now()}`;
   }
 
   private async exec(command: string): Promise<string> {
-    const flags: string[] = [`--session ${this.session}`];
-    if (this.profile) flags.push(`--profile '${this.profile}'`);
-    if (this.port) flags.push(`--cdp ${this.port}`);
-    const fullCommand = `agent-browser ${flags.join(" ")} ${command}`;
+    const fullCommand = `agent-browser --session ${this.session} ${command}`;
     try {
       const { stdout } = await execAsync(fullCommand);
       return stdout.trim();

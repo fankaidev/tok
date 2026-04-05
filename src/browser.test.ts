@@ -43,12 +43,7 @@ describe("Browser", () => {
   });
 
   it("creates Browser with session name", () => {
-    browser = new Browser({ sessionName: "test-session" });
-    expect(browser).toBeDefined();
-  });
-
-  it("creates Browser with profile and port", () => {
-    browser = new Browser({ profile: "/path/to/profile", port: 9222 });
+    browser = new Browser("test-session");
     expect(browser).toBeDefined();
   });
 

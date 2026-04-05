@@ -7,18 +7,16 @@ import { Input } from "./Input.js";
 import { useAppState } from "../state/useAppState.js";
 import { useKeyboard } from "../hooks/useKeyboard.js";
 import { useBrowser } from "../hooks/useBrowser.js";
-import type { BrowserOptions } from "../browser.js";
 
 export interface AppProps {
   url?: string;
-  browserOptions?: BrowserOptions;
 }
 
-export function App({ url, browserOptions }: AppProps) {
+export function App({ url }: AppProps) {
   const { exit } = useApp();
   const { stdout } = useStdout();
   const [state, actions] = useAppState(url);
-  const { navigate, click, back, cleanup } = useBrowser(state, actions, browserOptions);
+  const { navigate, click, back, cleanup } = useBrowser(state, actions);
 
   const viewportHeight = stdout?.rows ? stdout.rows - 4 : 20;
 
