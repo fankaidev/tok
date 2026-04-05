@@ -1,4 +1,4 @@
-export type InputMode = "normal" | "url";
+export type InputMode = "normal" | "url" | "search";
 
 export type StatusPriority = "error" | "loading" | "hint" | "info";
 
