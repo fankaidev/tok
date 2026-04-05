@@ -15,10 +15,17 @@ export interface InteractiveElement {
   type: "link" | "button";
 }
 
+export interface DisplayLine {
+  text: string;
+  interactive: boolean;
+  number?: number;
+}
+
 export interface AppState {
   url: string;
   title: string;
   elements: InteractiveElement[];
+  displayLines: DisplayLine[];
   highlightIndex: number;
   scrollOffset: number;
   totalLines: number;

@@ -27,7 +27,7 @@ export function useBrowser(
     const browser = getBrowser();
     try {
       const [snapshot, url, title] = await Promise.all([
-        browser.snapshot({ interactive: true }),
+        browser.snapshot(),
         browser.getUrl(),
         browser.getTitle(),
       ]);
@@ -48,6 +48,7 @@ export function useBrowser(
         url,
         title,
         elements,
+        displayLines: result.lines,
         totalLines: result.lines.length,
         numberToRef: result.numberToRef,
       };
