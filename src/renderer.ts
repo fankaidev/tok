@@ -148,7 +148,7 @@ function renderNode(node: SnapshotNode, ctx: RenderContext): void {
     return;
   }
 
-  // Handle interactive elements
+  // Handle interactive elements with ref
   if (isInteractive(node)) {
     const number = ctx.nextNumber++;
     ctx.numberToRef[number] = node.ref!;
@@ -158,6 +158,18 @@ function renderNode(node: SnapshotNode, ctx: RenderContext): void {
       number,
     });
     // Render children (e.g., options in combobox)
+    for (const child of node.children) {
+      renderNode(child, ctx);
+    }
+    return;
+  }
+
+  // Handle interactive elements without ref - display as plain text
+  if (INTERACTIVE_TYPES.has(node.type)) {
+    const text = node.name ?? "";
+    if (text) {
+      ctx.lines.push({ text, interactive: false });
+    }
     for (const child of node.children) {
       renderNode(child, ctx);
     }

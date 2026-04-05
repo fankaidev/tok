@@ -235,4 +235,32 @@ describe("render", () => {
     expect(result.lines).toContainEqual({ text: "[2] Sign In", interactive: true, number: 2 });
     expect(result.numberToRef).toEqual({ 1: "e2", 2: "e3" });
   });
+
+  it("renders interactive element without ref as plain text", () => {
+    const nodes: SnapshotNode[] = [
+      { type: "link", name: "Link without ref", children: [] },
+      { type: "button", name: "Button with ref", ref: "e1", children: [] },
+    ];
+    const result = render(nodes);
+
+    expect(result.lines).toContainEqual({ text: "Link without ref", interactive: false });
+    expect(result.lines).toContainEqual({
+      text: "[1] Button with ref",
+      interactive: true,
+      number: 1,
+    });
+    expect(result.numberToRef).toEqual({ 1: "e1" });
+  });
+
+  it("does not assign number to interactive element without ref", () => {
+    const nodes: SnapshotNode[] = [
+      { type: "textbox", name: "Name", children: [] },
+      { type: "checkbox", name: "Agree", children: [] },
+    ];
+    const result = render(nodes);
+
+    expect(result.lines).toContainEqual({ text: "Name", interactive: false });
+    expect(result.lines).toContainEqual({ text: "Agree", interactive: false });
+    expect(Object.keys(result.numberToRef)).toHaveLength(0);
+  });
 });
