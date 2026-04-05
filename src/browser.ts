@@ -41,7 +41,7 @@ export class Browser {
   private async exec(command: string): Promise<string> {
     const flags: string[] = [`--session ${this.session}`];
     if (this.profile) flags.push(`--profile '${this.profile}'`);
-    if (this.port) flags.push(`--port ${this.port}`);
+    if (this.port) flags.push(`--cdp ${this.port}`);
     const fullCommand = `agent-browser ${flags.join(" ")} ${command}`;
     try {
       const { stdout } = await execAsync(fullCommand);
