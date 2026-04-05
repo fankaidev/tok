@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import type {
   AppState,
+  DisplayLine,
   InputMode,
   InteractiveElement,
   StatusMessage,
@@ -14,6 +15,7 @@ function createInitialState(url?: string): AppState {
     url: url ?? "",
     title: "",
     elements: [],
+    displayLines: [],
     highlightIndex: 0,
     scrollOffset: 0,
     totalLines: 0,
@@ -29,6 +31,7 @@ export interface PageData {
   url: string;
   title: string;
   elements: InteractiveElement[];
+  displayLines: DisplayLine[];
   totalLines: number;
   numberToRef: Record<number, string>;
 }
@@ -129,7 +132,7 @@ export function useAppState(initialUrl?: string): [AppState, AppActions] {
   const setScrollOffset = useCallback((offset: number) => {
     setState((s) => ({
       ...s,
-      scrollOffset: Math.max(0, Math.min(offset, Math.max(0, s.elements.length - 1))),
+      scrollOffset: Math.max(0, Math.min(offset, Math.max(0, s.displayLines.length - 1))),
     }));
   }, []);
 
@@ -143,6 +146,7 @@ export function useAppState(initialUrl?: string): [AppState, AppActions] {
       url: data.url,
       title: data.title,
       elements: data.elements,
+      displayLines: data.displayLines,
       totalLines: data.totalLines,
       numberToRef: data.numberToRef,
       highlightIndex: 0,
@@ -155,17 +159,32 @@ export function useAppState(initialUrl?: string): [AppState, AppActions] {
     setState((s) => {
       const pageSize = Math.max(1, viewportHeight - 1);
       const delta = direction === "down" ? pageSize : -pageSize;
-      const maxOffset = Math.max(0, s.elements.length - viewportHeight);
+      const maxOffset = Math.max(0, s.displayLines.length - viewportHeight);
       const newOffset = Math.max(0, Math.min(s.scrollOffset + delta, maxOffset));
 
-      // Move highlight to stay in visible area
+      // Find first interactive line in visible area for highlight
       let newHighlight = s.highlightIndex;
-      if (newHighlight < newOffset) {
-        newHighlight = newOffset;
-      } else if (newHighlight >= newOffset + viewportHeight) {
-        newHighlight = newOffset + viewportHeight - 1;
+      const visibleStart = newOffset;
+      const visibleEnd = Math.min(newOffset + viewportHeight, s.displayLines.length);
+
+      // Check if current highlight is still visible
+      const highlightLineIndex = s.displayLines.findIndex(
+        (line) => line.interactive && line.number === s.elements[s.highlightIndex]?.label,
+      );
+
+      if (highlightLineIndex < visibleStart || highlightLineIndex >= visibleEnd) {
+        // Find first interactive element in visible area
+        for (let i = visibleStart; i < visibleEnd; i++) {
+          const line = s.displayLines[i];
+          if (line?.interactive && line.number !== undefined) {
+            const elemIdx = s.elements.findIndex((e) => e.label === line.number);
+            if (elemIdx >= 0) {
+              newHighlight = elemIdx;
+              break;
+            }
+          }
+        }
       }
-      newHighlight = Math.max(0, Math.min(newHighlight, s.elements.length - 1));
 
       return {
         ...s,
@@ -184,7 +203,7 @@ export function useAppState(initialUrl?: string): [AppState, AppActions] {
           highlightIndex: 0,
         };
       } else {
-        const maxOffset = Math.max(0, s.elements.length - viewportHeight);
+        const maxOffset = Math.max(0, s.displayLines.length - viewportHeight);
         return {
           ...s,
           scrollOffset: maxOffset,

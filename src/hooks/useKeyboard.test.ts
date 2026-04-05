@@ -18,6 +18,12 @@ describe("useKeyboard", () => {
         { ref: "c", label: 10, text: "Link 10", type: "link" },
         { ref: "d", label: 11, text: "Link 11", type: "link" },
       ],
+      displayLines: [
+        { text: "[1] Link 1", interactive: true, number: 1 },
+        { text: "[2] Link 2", interactive: true, number: 2 },
+        { text: "[10] Link 10", interactive: true, number: 10 },
+        { text: "[11] Link 11", interactive: true, number: 11 },
+      ],
       highlightIndex: 0,
       scrollOffset: 0,
       totalLines: 10,

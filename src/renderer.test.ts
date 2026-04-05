@@ -197,9 +197,12 @@ describe("render", () => {
     ];
     const result = render(nodes);
 
-    expect(result.lines).toContainEqual({ text: "Click ", interactive: false });
-    expect(result.lines).toContainEqual({ text: "[1] here", interactive: true, number: 1 });
-    expect(result.lines).toContainEqual({ text: " to continue.", interactive: false });
+    // Paragraph content is now combined into a single line
+    expect(result.lines).toContainEqual({
+      text: "Click [1] here to continue.",
+      interactive: true,
+      number: 1,
+    });
   });
 
   it("removes consecutive empty lines", () => {
@@ -262,5 +265,161 @@ describe("render", () => {
     expect(result.lines).toContainEqual({ text: "Name", interactive: false });
     expect(result.lines).toContainEqual({ text: "Agree", interactive: false });
     expect(Object.keys(result.numberToRef)).toHaveLength(0);
+  });
+
+  it("renders table row with multiple cells horizontally", () => {
+    const nodes: SnapshotNode[] = [
+      {
+        type: "table",
+        children: [
+          {
+            type: "row",
+            children: [
+              {
+                type: "cell",
+                children: [{ type: "link", name: "Home", ref: "e1", children: [] }],
+              },
+              {
+                type: "cell",
+                children: [{ type: "link", name: "About", ref: "e2", children: [] }],
+              },
+              {
+                type: "cell",
+                children: [{ type: "link", name: "Contact", ref: "e3", children: [] }],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const result = render(nodes);
+
+    // All nav items should be on one line
+    expect(result.lines).toHaveLength(1);
+    expect(result.lines[0]?.text).toBe("[1] Home  [2] About  [3] Contact");
+    expect(result.lines[0]?.interactive).toBe(true);
+    expect(result.numberToRef).toEqual({ 1: "e1", 2: "e2", 3: "e3" });
+  });
+
+  it("renders table with static text and links in cells", () => {
+    const nodes: SnapshotNode[] = [
+      {
+        type: "table",
+        children: [
+          {
+            type: "row",
+            children: [
+              {
+                type: "cell",
+                children: [{ type: "StaticText", name: "1.", children: [] }],
+              },
+              {
+                type: "cell",
+                children: [
+                  { type: "link", name: "Article Title", ref: "e1", children: [] },
+                  { type: "StaticText", name: " (example.com)", children: [] },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const result = render(nodes);
+
+    expect(result.lines).toHaveLength(1);
+    expect(result.lines[0]?.text).toBe("1.  [1] Article Title   (example.com)");
+  });
+
+  it("renders list with items horizontally grouped", () => {
+    const nodes: SnapshotNode[] = [
+      {
+        type: "list",
+        children: [
+          {
+            type: "listitem",
+            children: [
+              { type: "StaticText", name: "100 points by ", children: [] },
+              { type: "link", name: "user1", ref: "e1", children: [] },
+              { type: "StaticText", name: " | ", children: [] },
+              { type: "link", name: "50 comments", ref: "e2", children: [] },
+            ],
+          },
+        ],
+      },
+    ];
+    const result = render(nodes);
+
+    expect(result.lines).toHaveLength(1);
+    expect(result.lines[0]?.text).toBe("100 points by   [1] user1   |   [2] 50 comments");
+  });
+
+  it("renders multiple table rows as separate lines", () => {
+    const nodes: SnapshotNode[] = [
+      {
+        type: "table",
+        children: [
+          {
+            type: "row",
+            children: [
+              {
+                type: "cell",
+                children: [{ type: "link", name: "First Article", ref: "e1", children: [] }],
+              },
+            ],
+          },
+          {
+            type: "row",
+            children: [
+              {
+                type: "cell",
+                children: [
+                  { type: "StaticText", name: "10 points by ", children: [] },
+                  { type: "link", name: "author", ref: "e2", children: [] },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const result = render(nodes);
+
+    expect(result.lines).toHaveLength(2);
+    expect(result.lines[0]?.text).toBe("[1] First Article");
+    expect(result.lines[1]?.text).toBe("10 points by   [2] author");
+  });
+
+  it("renders Hacker News style navigation", () => {
+    const nodes: SnapshotNode[] = [
+      {
+        type: "navigation",
+        children: [
+          {
+            type: "list",
+            children: [
+              {
+                type: "listitem",
+                children: [{ type: "link", name: "new", ref: "e1", children: [] }],
+              },
+              {
+                type: "listitem",
+                children: [{ type: "link", name: "past", ref: "e2", children: [] }],
+              },
+              {
+                type: "listitem",
+                children: [{ type: "link", name: "comments", ref: "e3", children: [] }],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const result = render(nodes);
+
+    expect(result.lines).toHaveLength(3);
+    expect(result.lines[0]?.text).toBe("[1] new");
+    expect(result.lines[1]?.text).toBe("[2] past");
+    expect(result.lines[2]?.text).toBe("[3] comments");
   });
 });

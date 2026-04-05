@@ -57,8 +57,8 @@ export function App({ url }: AppProps) {
     <Box flexDirection="column" height={stdout?.rows}>
       <Header title={state.title} url={state.url} />
       <Content
-        elements={state.elements}
-        highlightIndex={state.highlightIndex}
+        displayLines={state.displayLines}
+        highlightNumber={state.elements[state.highlightIndex]?.label}
         scrollOffset={state.scrollOffset}
         viewportHeight={viewportHeight}
       />
