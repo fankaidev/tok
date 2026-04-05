@@ -34,8 +34,8 @@ export interface PageData {
 }
 
 export interface AppActions {
-  setHighlight: (index: number) => void;
-  moveHighlight: (delta: number) => void;
+  setHighlight: (index: number, viewportHeight?: number) => void;
+  moveHighlight: (delta: number, viewportHeight?: number) => void;
   setInputMode: (mode: InputMode) => void;
   setInputBuffer: (buffer: string) => void;
   appendToBuffer: (char: string) => void;
@@ -45,23 +45,55 @@ export interface AppActions {
   setScrollOffset: (offset: number) => void;
   setLoading: (loading: boolean) => void;
   setPage: (data: PageData) => void;
+  scrollPage: (direction: "up" | "down", viewportHeight: number) => void;
+  scrollToEnd: (position: "start" | "end", viewportHeight: number) => void;
 }
 
 export function useAppState(initialUrl?: string): [AppState, AppActions] {
   const [state, setState] = useState<AppState>(() => createInitialState(initialUrl));
 
-  const setHighlight = useCallback((index: number) => {
-    setState((s) => ({
-      ...s,
-      highlightIndex: Math.max(0, Math.min(index, s.elements.length - 1)),
-    }));
+  const setHighlight = useCallback((index: number, viewportHeight?: number) => {
+    setState((s) => {
+      const newIndex = Math.max(0, Math.min(index, s.elements.length - 1));
+      let newOffset = s.scrollOffset;
+
+      if (viewportHeight) {
+        // Auto-scroll to keep highlight visible
+        if (newIndex < newOffset) {
+          newOffset = newIndex;
+        } else if (newIndex >= newOffset + viewportHeight) {
+          newOffset = newIndex - viewportHeight + 1;
+        }
+      }
+
+      return {
+        ...s,
+        highlightIndex: newIndex,
+        scrollOffset: Math.max(0, newOffset),
+      };
+    });
   }, []);
 
-  const moveHighlight = useCallback((delta: number) => {
-    setState((s) => ({
-      ...s,
-      highlightIndex: Math.max(0, Math.min(s.highlightIndex + delta, s.elements.length - 1)),
-    }));
+  const moveHighlight = useCallback((delta: number, viewportHeight?: number) => {
+    setState((s) => {
+      const newIndex = Math.max(0, Math.min(s.highlightIndex + delta, s.elements.length - 1));
+      let newOffset = s.scrollOffset;
+
+      if (viewportHeight) {
+        // Auto-scroll to keep highlight visible
+        if (newIndex < newOffset) {
+          newOffset = newIndex;
+        } else if (newIndex >= newOffset + viewportHeight) {
+          newOffset = newIndex - viewportHeight + 1;
+        }
+      }
+
+      return {
+        ...s,
+        highlightIndex: newIndex,
+        scrollOffset: Math.max(0, newOffset),
+      };
+    });
   }, []);
 
   const setInputMode = useCallback((mode: InputMode) => {
@@ -97,7 +129,7 @@ export function useAppState(initialUrl?: string): [AppState, AppActions] {
   const setScrollOffset = useCallback((offset: number) => {
     setState((s) => ({
       ...s,
-      scrollOffset: Math.max(0, Math.min(offset, Math.max(0, s.totalLines - 1))),
+      scrollOffset: Math.max(0, Math.min(offset, Math.max(0, s.elements.length - 1))),
     }));
   }, []);
 
@@ -119,6 +151,49 @@ export function useAppState(initialUrl?: string): [AppState, AppActions] {
     }));
   }, []);
 
+  const scrollPage = useCallback((direction: "up" | "down", viewportHeight: number) => {
+    setState((s) => {
+      const pageSize = Math.max(1, viewportHeight - 1);
+      const delta = direction === "down" ? pageSize : -pageSize;
+      const maxOffset = Math.max(0, s.elements.length - viewportHeight);
+      const newOffset = Math.max(0, Math.min(s.scrollOffset + delta, maxOffset));
+
+      // Move highlight to stay in visible area
+      let newHighlight = s.highlightIndex;
+      if (newHighlight < newOffset) {
+        newHighlight = newOffset;
+      } else if (newHighlight >= newOffset + viewportHeight) {
+        newHighlight = newOffset + viewportHeight - 1;
+      }
+      newHighlight = Math.max(0, Math.min(newHighlight, s.elements.length - 1));
+
+      return {
+        ...s,
+        scrollOffset: newOffset,
+        highlightIndex: newHighlight,
+      };
+    });
+  }, []);
+
+  const scrollToEnd = useCallback((position: "start" | "end", viewportHeight: number) => {
+    setState((s) => {
+      if (position === "start") {
+        return {
+          ...s,
+          scrollOffset: 0,
+          highlightIndex: 0,
+        };
+      } else {
+        const maxOffset = Math.max(0, s.elements.length - viewportHeight);
+        return {
+          ...s,
+          scrollOffset: maxOffset,
+          highlightIndex: s.elements.length - 1,
+        };
+      }
+    });
+  }, []);
+
   const actions: AppActions = {
     setHighlight,
     moveHighlight,
@@ -131,6 +206,8 @@ export function useAppState(initialUrl?: string): [AppState, AppActions] {
     setScrollOffset,
     setLoading,
     setPage,
+    scrollPage,
+    scrollToEnd,
   };
 
   return [state, actions];

@@ -20,13 +20,18 @@ export function App({ url }: AppProps) {
 
   const viewportHeight = stdout?.rows ? stdout.rows - 4 : 20;
 
-  useKeyboard(state, actions, {
-    onNavigate: navigate,
-    onClick: (ref) => {
-      click(ref);
+  useKeyboard(
+    state,
+    actions,
+    {
+      onNavigate: navigate,
+      onClick: (ref) => {
+        click(ref);
+      },
+      onBack: back,
     },
-    onBack: back,
-  });
+    { viewportHeight },
+  );
 
   useEffect(() => {
     return () => {
@@ -51,7 +56,12 @@ export function App({ url }: AppProps) {
   return (
     <Box flexDirection="column" height={stdout?.rows}>
       <Header title={state.title} url={state.url} />
-      <Content elements={state.elements} highlightIndex={state.highlightIndex} />
+      <Content
+        elements={state.elements}
+        highlightIndex={state.highlightIndex}
+        scrollOffset={state.scrollOffset}
+        viewportHeight={viewportHeight}
+      />
       <StatusBar
         messages={state.statusMessages}
         scrollOffset={state.scrollOffset}
