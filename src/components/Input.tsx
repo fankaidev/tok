@@ -18,6 +18,16 @@ export function Input({ mode, buffer }: InputProps) {
     );
   }
 
+  if (mode === "search") {
+    return (
+      <Box>
+        <Text color="cyan">Search: </Text>
+        <Text>{buffer}</Text>
+        <Text>_</Text>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Text color="cyan">&gt; </Text>

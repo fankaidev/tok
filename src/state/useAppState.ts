@@ -25,7 +25,7 @@ const initialState: AppState = {
   totalLines: 20,
   inputMode: "normal",
   inputBuffer: "",
-  statusMessages: [{ text: "Press q to quit, g to go to URL", priority: "hint" }],
+  statusMessages: [{ text: "q:quit g:url /:search j/k:nav", priority: "hint" }],
 };
 
 export interface AppActions {
