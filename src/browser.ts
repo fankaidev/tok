@@ -21,15 +21,28 @@ export interface SnapshotOptions {
   selector?: string;
 }
 
+export interface BrowserOptions {
+  sessionName?: string;
+  headless?: boolean;
+}
+
 export class Browser {
   private session: string;
+  private headless: boolean;
 
-  constructor(sessionName?: string) {
-    this.session = sessionName ?? `tok-${Date.now()}`;
+  constructor(options?: BrowserOptions | string) {
+    if (typeof options === "string") {
+      this.session = options;
+      this.headless = false;
+    } else {
+      this.session = options?.sessionName ?? `tok-${Date.now()}`;
+      this.headless = options?.headless ?? false;
+    }
   }
 
   private async exec(command: string): Promise<string> {
-    const fullCommand = `agent-browser --session ${this.session} ${command}`;
+    const headedFlag = this.headless ? "" : "--headed ";
+    const fullCommand = `agent-browser ${headedFlag}--session ${this.session} ${command}`;
     try {
       const { stdout } = await execAsync(fullCommand);
       return stdout.trim();
