@@ -7,26 +7,31 @@ import type {
   StatusPriority,
 } from "./AppState.js";
 
-const MOCK_ELEMENTS: InteractiveElement[] = [
-  { ref: "1", label: 1, text: "Hacker News", type: "link" },
-  { ref: "2", label: 2, text: "new", type: "link" },
-  { ref: "3", label: 3, text: "past", type: "link" },
-  { ref: "4", label: 4, text: "comments", type: "link" },
-  { ref: "5", label: 5, text: "77 comments", type: "link" },
-  { ref: "6", label: 6, text: "161 comments", type: "link" },
-];
+const DEFAULT_HINT: StatusMessage = { text: "q:quit g:url /:search j/k:nav", priority: "hint" };
 
-const initialState: AppState = {
-  url: "https://news.ycombinator.com",
-  title: "Hacker News",
-  elements: MOCK_ELEMENTS,
-  highlightIndex: 0,
-  scrollOffset: 0,
-  totalLines: 20,
-  inputMode: "normal",
-  inputBuffer: "",
-  statusMessages: [{ text: "q:quit g:url /:search j/k:nav", priority: "hint" }],
-};
+function createInitialState(url?: string): AppState {
+  return {
+    url: url ?? "",
+    title: "",
+    elements: [],
+    highlightIndex: 0,
+    scrollOffset: 0,
+    totalLines: 0,
+    inputMode: "normal",
+    inputBuffer: "",
+    statusMessages: [DEFAULT_HINT],
+    isLoading: false,
+    numberToRef: {},
+  };
+}
+
+export interface PageData {
+  url: string;
+  title: string;
+  elements: InteractiveElement[];
+  totalLines: number;
+  numberToRef: Record<number, string>;
+}
 
 export interface AppActions {
   setHighlight: (index: number) => void;
@@ -38,10 +43,12 @@ export interface AppActions {
   pushStatus: (text: string, priority: StatusPriority, ttl?: number) => void;
   clearStatus: (priority?: StatusPriority) => void;
   setScrollOffset: (offset: number) => void;
+  setLoading: (loading: boolean) => void;
+  setPage: (data: PageData) => void;
 }
 
-export function useAppState(): [AppState, AppActions] {
-  const [state, setState] = useState<AppState>(initialState);
+export function useAppState(initialUrl?: string): [AppState, AppActions] {
+  const [state, setState] = useState<AppState>(() => createInitialState(initialUrl));
 
   const setHighlight = useCallback((index: number) => {
     setState((s) => ({
@@ -94,6 +101,24 @@ export function useAppState(): [AppState, AppActions] {
     }));
   }, []);
 
+  const setLoading = useCallback((loading: boolean) => {
+    setState((s) => ({ ...s, isLoading: loading }));
+  }, []);
+
+  const setPage = useCallback((data: PageData) => {
+    setState((s) => ({
+      ...s,
+      url: data.url,
+      title: data.title,
+      elements: data.elements,
+      totalLines: data.totalLines,
+      numberToRef: data.numberToRef,
+      highlightIndex: 0,
+      scrollOffset: 0,
+      isLoading: false,
+    }));
+  }, []);
+
   const actions: AppActions = {
     setHighlight,
     moveHighlight,
@@ -104,6 +129,8 @@ export function useAppState(): [AppState, AppActions] {
     pushStatus,
     clearStatus,
     setScrollOffset,
+    setLoading,
+    setPage,
   };
 
   return [state, actions];

@@ -1,9 +1,12 @@
 {
   "name": "tok",
   "version": "0.1.0",
+  "bin": {
+    "tok": "./dist/cli.js"
+  },
   "type": "module",
   "scripts": {
-    "dev": "tsx src/index.tsx",
+    "dev": "tsx src/cli.tsx",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest run",
