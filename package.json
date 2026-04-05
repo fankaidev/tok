@@ -1,6 +1,7 @@
 {
   "name": "tok",
   "version": "0.1.0",
+  "license": "BSD-2-Clause",
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.tsx",
