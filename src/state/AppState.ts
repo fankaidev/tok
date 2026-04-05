@@ -25,6 +25,8 @@ export interface AppState {
   inputMode: InputMode;
   inputBuffer: string;
   statusMessages: StatusMessage[];
+  isLoading: boolean;
+  numberToRef: Record<number, string>;
 }
 
 export const PRIORITY_ORDER: Record<StatusPriority, number> = {

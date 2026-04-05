@@ -24,6 +24,8 @@ describe("useKeyboard", () => {
       inputMode: "normal",
       inputBuffer: "",
       statusMessages: [],
+      isLoading: false,
+      numberToRef: {},
     };
 
     actions = {
@@ -36,6 +38,8 @@ describe("useKeyboard", () => {
       pushStatus: vi.fn(),
       clearStatus: vi.fn(),
       setScrollOffset: vi.fn(),
+      setLoading: vi.fn(),
+      setPage: vi.fn(),
     };
   });
 
