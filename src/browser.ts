@@ -29,7 +29,7 @@ export class Browser {
   }
 
   private async exec(command: string): Promise<string> {
-    const fullCommand = `agent-browser --session ${this.session} ${command}`;
+    const fullCommand = `agent-browser --headed --session ${this.session} ${command}`;
     try {
       const { stdout } = await execAsync(fullCommand);
       return stdout.trim();
