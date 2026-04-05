@@ -48,7 +48,7 @@ export function App() {
         }, DIGIT_TIMEOUT_MS);
       }
     },
-    [state.inputBuffer, state.elements, actions]
+    [state.inputBuffer, state.elements, actions],
   );
 
   useEffect(() => {

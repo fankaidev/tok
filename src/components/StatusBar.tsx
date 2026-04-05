@@ -20,7 +20,8 @@ const PRIORITY_COLORS: Record<string, string | undefined> = {
 export function StatusBar({ messages, scrollOffset, totalLines, viewportHeight }: StatusBarProps) {
   const message = getHighestPriorityMessage(messages);
   const showScroll = totalLines > viewportHeight;
-  const scrollPercent = totalLines > 0 ? Math.round(((scrollOffset + viewportHeight) / totalLines) * 100) : 0;
+  const scrollPercent =
+    totalLines > 0 ? Math.round(((scrollOffset + viewportHeight) / totalLines) * 100) : 0;
 
   const renderStatusText = () => {
     if (!message) return null;

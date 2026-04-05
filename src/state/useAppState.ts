@@ -1,5 +1,11 @@
 import { useCallback, useState } from "react";
-import type { AppState, InputMode, InteractiveElement, StatusMessage, StatusPriority } from "./AppState.js";
+import type {
+  AppState,
+  InputMode,
+  InteractiveElement,
+  StatusMessage,
+  StatusPriority,
+} from "./AppState.js";
 
 const MOCK_ELEMENTS: InteractiveElement[] = [
   { ref: "1", label: 1, text: "Hacker News", type: "link" },

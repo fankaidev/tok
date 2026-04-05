@@ -39,6 +39,6 @@ export function getHighestPriorityMessage(messages: StatusMessage[]): StatusMess
   const active = messages.filter((m) => !m.expiresAt || m.expiresAt > now);
   if (active.length === 0) return null;
   return active.reduce((highest, current) =>
-    PRIORITY_ORDER[current.priority] < PRIORITY_ORDER[highest.priority] ? current : highest
+    PRIORITY_ORDER[current.priority] < PRIORITY_ORDER[highest.priority] ? current : highest,
   );
 }
