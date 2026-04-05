@@ -46,8 +46,8 @@ describe("Browser", () => {
     await browser.click(match![1]!);
   });
 
-  it("creates Browser with session name", () => {
-    browser = new Browser("test-session");
+  it("creates Browser with options", () => {
+    browser = new Browser({ sessionName: "test-session", headless: true });
     expect(browser).toBeDefined();
   });
 
