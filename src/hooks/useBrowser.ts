@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { Browser } from "../browser.js";
+import type { BrowserOptions } from "../browser.js";
 import { parseSnapshot } from "../parser.js";
 import { render } from "../renderer.js";
 import type { AppState, InteractiveElement } from "../state/AppState.js";
@@ -8,6 +9,7 @@ import type { AppActions, PageData } from "../state/useAppState.js";
 export function useBrowser(
   state: AppState,
   actions: AppActions,
+  browserOptions?: BrowserOptions,
 ): {
   navigate: (url: string) => Promise<void>;
   click: (ref: string) => Promise<void>;
@@ -15,10 +17,11 @@ export function useBrowser(
   cleanup: () => Promise<void>;
 } {
   const browserRef = useRef<Browser | null>(null);
+  const optionsRef = useRef(browserOptions);
 
   const getBrowser = useCallback(() => {
     if (!browserRef.current) {
-      browserRef.current = new Browser();
+      browserRef.current = new Browser(optionsRef.current);
     }
     return browserRef.current;
   }, []);
