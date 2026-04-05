@@ -1,47 +1,57 @@
-import { Browser } from "./browser.js";
+import { describe, it, expect, afterEach } from "vitest";
+import { Browser, BrowserError } from "./browser.js";
 
-async function test() {
-  const browser = new Browser();
+describe("Browser", () => {
+  let browser: Browser;
 
-  // Test open and snapshot
-  await browser.open("data:text/html,<h1>Hello</h1>");
-  let tree = await browser.snapshot({ compact: true });
-  console.log("Snapshot:", tree);
-  if (!tree.includes("Hello")) throw new Error('Expected "Hello" in snapshot');
+  afterEach(async () => {
+    if (browser) {
+      await browser.close().catch(() => {});
+    }
+  });
 
-  // Test navigation info
-  const url = await browser.getUrl();
-  console.log("URL:", url);
-  if (!url.includes("data:text/html")) throw new Error("Expected data URL");
+  it("open and snapshot", async () => {
+    browser = new Browser();
+    await browser.open("data:text/html,<h1>Hello</h1>");
+    const tree = await browser.snapshot({ compact: true });
+    expect(tree).toContain("Hello");
+  });
 
-  // Test form interaction
-  await browser.open('data:text/html,<input id="email" placeholder="Email">');
-  tree = await browser.snapshot({ interactive: true });
-  console.log("Form snapshot:", tree);
+  it("getUrl", async () => {
+    browser = new Browser();
+    await browser.open("data:text/html,<h1>Test</h1>");
+    const url = await browser.getUrl();
+    expect(url).toContain("data:text/html");
+  });
 
-  // Find the input ref from snapshot
-  const match = tree.match(/ref=(e\d+)/);
-  if (!match?.[1]) throw new Error("Could not find input ref");
-  const ref = match[1];
+  it("fill", async () => {
+    browser = new Browser();
+    await browser.open('data:text/html,<input id="email" placeholder="Email">');
+    const tree = await browser.snapshot({ interactive: true });
+    const match = tree.match(/ref=(e\d+)/);
+    expect(match?.[1]).toBeDefined();
+    await browser.fill(match![1]!, "test@example.com");
+  });
 
-  await browser.fill(ref, "test@example.com");
-  const value = await browser.getText(ref);
-  console.log("Input value:", value);
+  it("click", async () => {
+    browser = new Browser();
+    await browser.open('data:text/html,<button id="btn">Click me</button>');
+    const tree = await browser.snapshot({ interactive: true });
+    const match = tree.match(/ref=(e\d+)/);
+    expect(match?.[1]).toBeDefined();
+    await browser.click(match![1]!);
+  });
 
-  // Test click
-  await browser.open('data:text/html,<button id="btn">Click me</button>');
-  tree = await browser.snapshot({ interactive: true });
-  const btnMatch = tree.match(/ref=(e\d+)/);
-  if (!btnMatch?.[1]) throw new Error("Could not find button ref");
-  await browser.click(btnMatch[1]);
-  console.log("Click: OK");
+  it("creates Browser with session name", () => {
+    browser = new Browser("test-session");
+    expect(browser).toBeDefined();
+  });
 
-  // Cleanup
-  await browser.close();
-  console.log("All tests passed!");
-}
-
-test().catch((err) => {
-  console.error("Test failed:", err);
-  process.exit(1);
+  it("BrowserError has correct properties", () => {
+    const error = new BrowserError("test message", "test command", "test stderr");
+    expect(error.message).toBe("test message");
+    expect(error.command).toBe("test command");
+    expect(error.stderr).toBe("test stderr");
+    expect(error.name).toBe("BrowserError");
+  });
 });
