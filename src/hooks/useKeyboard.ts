@@ -12,11 +12,17 @@ export interface KeyboardCallbacks {
   onSearch?: (query: string) => void;
 }
 
+export interface KeyboardOptions {
+  viewportHeight: number;
+}
+
 export function useKeyboard(
   state: AppState,
   actions: AppActions,
   callbacks: KeyboardCallbacks = {},
+  options: KeyboardOptions = { viewportHeight: 20 },
 ): void {
+  const { viewportHeight } = options;
   const { exit } = useApp();
   const digitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -118,13 +124,40 @@ export function useKeyboard(
       return;
     }
 
+    // Meta+arrow for jump to start/end (check before plain arrows)
+    if (key.meta && key.upArrow) {
+      actions.scrollToEnd("start", viewportHeight);
+      return;
+    }
+
+    if (key.meta && key.downArrow) {
+      actions.scrollToEnd("end", viewportHeight);
+      return;
+    }
+
     if (input === "j" || key.downArrow) {
-      actions.moveHighlight(1);
+      actions.moveHighlight(1, viewportHeight);
       return;
     }
 
     if (input === "k" || key.upArrow) {
-      actions.moveHighlight(-1);
+      actions.moveHighlight(-1, viewportHeight);
+      return;
+    }
+
+    if (key.pageDown || (key.ctrl && input === "d")) {
+      actions.scrollPage("down", viewportHeight);
+      return;
+    }
+
+    if (key.pageUp || (key.ctrl && input === "u")) {
+      actions.scrollPage("up", viewportHeight);
+      return;
+    }
+
+    // Vim-style: G goes to end
+    if (input === "G") {
+      actions.scrollToEnd("end", viewportHeight);
       return;
     }
 

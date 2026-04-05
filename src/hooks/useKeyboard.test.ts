@@ -40,6 +40,8 @@ describe("useKeyboard", () => {
       setScrollOffset: vi.fn(),
       setLoading: vi.fn(),
       setPage: vi.fn(),
+      scrollPage: vi.fn(),
+      scrollToEnd: vi.fn(),
     };
   });
 
@@ -51,25 +53,69 @@ describe("useKeyboard", () => {
     it("moveHighlight(1) on j key", () => {
       const { handleInput } = createKeyboardHandler(state, actions);
       handleInput("j", {});
-      expect(actions.moveHighlight).toHaveBeenCalledWith(1);
+      expect(actions.moveHighlight).toHaveBeenCalledWith(1, 20);
     });
 
     it("moveHighlight(-1) on k key", () => {
       const { handleInput } = createKeyboardHandler(state, actions);
       handleInput("k", {});
-      expect(actions.moveHighlight).toHaveBeenCalledWith(-1);
+      expect(actions.moveHighlight).toHaveBeenCalledWith(-1, 20);
     });
 
     it("moveHighlight(1) on down arrow", () => {
       const { handleInput } = createKeyboardHandler(state, actions);
       handleInput("", { downArrow: true });
-      expect(actions.moveHighlight).toHaveBeenCalledWith(1);
+      expect(actions.moveHighlight).toHaveBeenCalledWith(1, 20);
     });
 
     it("moveHighlight(-1) on up arrow", () => {
       const { handleInput } = createKeyboardHandler(state, actions);
       handleInput("", { upArrow: true });
-      expect(actions.moveHighlight).toHaveBeenCalledWith(-1);
+      expect(actions.moveHighlight).toHaveBeenCalledWith(-1, 20);
+    });
+  });
+
+  describe("scroll navigation", () => {
+    it("scrollPage down on Page Down", () => {
+      const { handleInput } = createKeyboardHandler(state, actions);
+      handleInput("", { pageDown: true });
+      expect(actions.scrollPage).toHaveBeenCalledWith("down", 20);
+    });
+
+    it("scrollPage up on Page Up", () => {
+      const { handleInput } = createKeyboardHandler(state, actions);
+      handleInput("", { pageUp: true });
+      expect(actions.scrollPage).toHaveBeenCalledWith("up", 20);
+    });
+
+    it("scrollPage down on Ctrl+D", () => {
+      const { handleInput } = createKeyboardHandler(state, actions);
+      handleInput("d", { ctrl: true });
+      expect(actions.scrollPage).toHaveBeenCalledWith("down", 20);
+    });
+
+    it("scrollPage up on Ctrl+U", () => {
+      const { handleInput } = createKeyboardHandler(state, actions);
+      handleInput("u", { ctrl: true });
+      expect(actions.scrollPage).toHaveBeenCalledWith("up", 20);
+    });
+
+    it("scrollToEnd start on Cmd+Up", () => {
+      const { handleInput } = createKeyboardHandler(state, actions);
+      handleInput("", { meta: true, upArrow: true });
+      expect(actions.scrollToEnd).toHaveBeenCalledWith("start", 20);
+    });
+
+    it("scrollToEnd end on Cmd+Down", () => {
+      const { handleInput } = createKeyboardHandler(state, actions);
+      handleInput("", { meta: true, downArrow: true });
+      expect(actions.scrollToEnd).toHaveBeenCalledWith("end", 20);
+    });
+
+    it("scrollToEnd end on G key", () => {
+      const { handleInput } = createKeyboardHandler(state, actions);
+      handleInput("G", {});
+      expect(actions.scrollToEnd).toHaveBeenCalledWith("end", 20);
     });
   });
 
@@ -218,6 +264,8 @@ interface KeyInfo {
   delete?: boolean;
   ctrl?: boolean;
   meta?: boolean;
+  pageUp?: boolean;
+  pageDown?: boolean;
 }
 
 interface KeyboardCallbacks {
@@ -231,6 +279,7 @@ function createKeyboardHandler(
   state: AppState,
   actions: AppActions,
   callbacks: KeyboardCallbacks = {},
+  viewportHeight: number = 20,
 ) {
   const DIGIT_TIMEOUT_MS = 300;
   let digitTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -280,13 +329,38 @@ function createKeyboardHandler(
       return;
     }
 
+    if (key.meta && key.upArrow) {
+      actions.scrollToEnd("start", viewportHeight);
+      return;
+    }
+
+    if (key.meta && key.downArrow) {
+      actions.scrollToEnd("end", viewportHeight);
+      return;
+    }
+
     if (input === "j" || key.downArrow) {
-      actions.moveHighlight(1);
+      actions.moveHighlight(1, viewportHeight);
       return;
     }
 
     if (input === "k" || key.upArrow) {
-      actions.moveHighlight(-1);
+      actions.moveHighlight(-1, viewportHeight);
+      return;
+    }
+
+    if (key.pageDown || (key.ctrl && input === "d")) {
+      actions.scrollPage("down", viewportHeight);
+      return;
+    }
+
+    if (key.pageUp || (key.ctrl && input === "u")) {
+      actions.scrollPage("up", viewportHeight);
+      return;
+    }
+
+    if (input === "G") {
+      actions.scrollToEnd("end", viewportHeight);
       return;
     }
 
